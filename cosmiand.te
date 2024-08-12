@@ -1,0 +1,32 @@
+policy_module(cosmiand, 0.1)
+
+require {
+  type unconfined_t;
+  type setroubleshootd_t;
+}
+
+type cosmiand_t;
+fs_associate(cosmiand_t);
+allow unconfined_t cosmiand_t:dir { relabelto relabelfrom add_name remove_name search getattr setattr open read write rmdir };
+allow unconfined_t cosmiand_t:file { relabelto getattr setattr append create open read write unlink };
+allow setroubleshootd_t cosmiand_t:{ dir file } getattr;
+
+type cosmiand_exec_t;
+fs_associate(cosmiand_exec_t);
+allow unconfined_t cosmiand_exec_t:dir { relabelto relabelfrom add_name remove_name search getattr setattr open read write rmdir };
+allow unconfined_t cosmiand_exec_t:file { relabelto getattr setattr append create open read write unlink };
+allow setroubleshootd_t cosmiand_exec_t:{ dir file } getattr;
+
+type cosmiand_config_t;
+fs_associate(cosmiand_config_t);
+allow unconfined_t cosmiand_config_t:dir { relabelto relabelfrom add_name remove_name search getattr setattr open read write rmdir };
+allow unconfined_t cosmiand_config_t:file { relabelto getattr setattr append create open read write unlink };
+allow setroubleshootd_t cosmiand_config_t:{ dir file } getattr;
+
+type cosmiand_service_t;
+fs_associate(cosmiand_service_t);
+allow unconfined_t cosmiand_service_t:dir { relabelto relabelfrom add_name remove_name search getattr setattr open read write rmdir };
+allow unconfined_t cosmiand_service_t:file { relabelto getattr setattr append create open read write unlink };
+allow setroubleshootd_t cosmiand_service_t:{ dir file } getattr;
+
+type_transition unconfined_t cosmiand_exec_t : process cosmiand_service_t;

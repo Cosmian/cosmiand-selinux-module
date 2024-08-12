@@ -1,0 +1,31 @@
+on: [push]
+
+name: Continuous integration
+
+jobs:
+  build:
+    name: Build SELinux module
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/almalinux/9-base:9.4
+    steps:
+      - name: Install dependencies
+        run: |
+          dnf install -y selinux-policy-targeted \
+                   policycoreutils \
+                   policycoreutils-devel \
+                   setools-console \
+                   setroubleshoot
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build module
+        run: |
+          make -f /usr/share/selinux/devel/Makefile cosmiand.pp
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: selinux-cosmiand-module
+          path: cosmiand.pp
