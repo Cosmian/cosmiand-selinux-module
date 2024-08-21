@@ -1,32 +1,46 @@
-policy_module(cosmiand, 0.1)
+policy_module(cosmiand, 1.0.0)
+
+########################################
+#
+# Declarations
+#
+
+type cosmiand_t;
+type cosmiand_exec_t;
+init_daemon_domain(cosmiand_t, cosmiand_exec_t)
+
+permissive cosmiand_t;
+
+########################################
+#
+# cosmiand filesystem policy
+#
 
 require {
   type unconfined_t;
   type setroubleshootd_t;
 }
 
-type cosmiand_t;
 fs_associate(cosmiand_t);
 allow unconfined_t cosmiand_t:dir { relabelto relabelfrom add_name remove_name search getattr setattr open read write rmdir };
 allow unconfined_t cosmiand_t:file { relabelto getattr setattr append create open read write unlink };
 allow setroubleshootd_t cosmiand_t:{ dir file } getattr;
 
-type cosmiand_exec_t;
-fs_associate(cosmiand_exec_t);
-allow unconfined_t cosmiand_exec_t:dir { relabelto relabelfrom add_name remove_name search getattr setattr open read write rmdir };
-allow unconfined_t cosmiand_exec_t:file { relabelto getattr setattr append create open read write unlink };
-allow setroubleshootd_t cosmiand_exec_t:{ dir file } getattr;
 
-type cosmiand_config_t;
-fs_associate(cosmiand_config_t);
-allow unconfined_t cosmiand_config_t:dir { relabelto relabelfrom add_name remove_name search getattr setattr open read write rmdir };
-allow unconfined_t cosmiand_config_t:file { relabelto getattr setattr append create open read write unlink };
-allow setroubleshootd_t cosmiand_config_t:{ dir file } getattr;
+########################################
+#
+# cosmiand local policy
+#
 
-type cosmiand_service_t;
-fs_associate(cosmiand_service_t);
-allow unconfined_t cosmiand_service_t:dir { relabelto relabelfrom add_name remove_name search getattr setattr open read write rmdir };
-allow unconfined_t cosmiand_service_t:file { relabelto getattr setattr append create open read write unlink };
-allow setroubleshootd_t cosmiand_service_t:{ dir file } getattr;
+allow cosmiand_t self:capability { setgid setuid };
+allow cosmiand_t self:process { fork setpgid setrlimit signal_perms };
+allow cosmiand_t self:fifo_file rw_fifo_file_perms;
+allow cosmiand_t self:unix_stream_socket create_stream_socket_perms;
 
-type_transition unconfined_t cosmiand_exec_t : process cosmiand_service_t;
+domain_use_interactive_fds(cosmiand_t)
+
+files_read_etc_files(cosmiand_t)
+
+miscfiles_read_localization(cosmiand_t)
+
+sysnet_dns_name_resolve(cosmiand_t)
