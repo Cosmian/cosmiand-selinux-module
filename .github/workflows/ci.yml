@@ -32,7 +32,7 @@ jobs:
   push:
     needs: build
     name: Push on package.cosmian.com
-    runs-on: self-hosted
+    runs-on: [self-hosted, not-sgx]
     container:
       image: cosmian/docker_doc_ci
       volumes:
