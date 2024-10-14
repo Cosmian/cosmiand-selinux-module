@@ -1,4 +1,10 @@
-policy_module(cosmiand, 1.0.0)
+policy_module(cosmiand, 1.1.0)
+
+require {
+  type unconfined_t;
+  type unlabeled_t;
+  type setroubleshootd_t;
+}
 
 ########################################
 #
@@ -6,41 +12,46 @@ policy_module(cosmiand, 1.0.0)
 #
 
 type cosmiand_t;
+type cosmiand_script_t;
 type cosmiand_exec_t;
-init_daemon_domain(cosmiand_t, cosmiand_exec_t)
 
 permissive cosmiand_t;
+permissive cosmiand_script_t;
 
 ########################################
 #
-# cosmiand filesystem policy
+# cosmiand_exec_t and cosmiand_t polices
 #
 
-require {
-  type unconfined_t;
-  type setroubleshootd_t;
-}
+init_daemon_domain(cosmiand_t, cosmiand_exec_t)
 
-fs_associate(cosmiand_t);
+fs_associate(cosmiand_t)
+
+domain_use_interactive_fds(cosmiand_t)
+files_read_etc_files(cosmiand_t)
+miscfiles_read_localization(cosmiand_t)
+sysnet_dns_name_resolve(cosmiand_t)
+
 allow unconfined_t cosmiand_t:dir { relabelto relabelfrom add_name remove_name search getattr setattr open read write rmdir };
 allow unconfined_t cosmiand_t:file { relabelto getattr setattr append create open read write unlink };
 allow setroubleshootd_t cosmiand_t:{ dir file } getattr;
-
-
-########################################
-#
-# cosmiand local policy
-#
 
 allow cosmiand_t self:capability { setgid setuid };
 allow cosmiand_t self:process { fork setpgid setrlimit signal_perms };
 allow cosmiand_t self:fifo_file rw_fifo_file_perms;
 allow cosmiand_t self:unix_stream_socket create_stream_socket_perms;
+allow cosmiand_t self:tcp_socket accept;
 
-domain_use_interactive_fds(cosmiand_t)
+########################################
+#
+# cosmiand_script_t policies
+#
 
-files_read_etc_files(cosmiand_t)
+files_type(cosmiand_script_t)
+fs_associate(cosmiand_script_t)
+miscfiles_read_localization(cosmiand_script_t)
+files_read_etc_files(cosmiand_script_t)
 
-miscfiles_read_localization(cosmiand_t)
-
-sysnet_dns_name_resolve(cosmiand_t)
+allow unconfined_t cosmiand_script_t:dir { relabelto relabelfrom add_name remove_name search getattr setattr open read write rmdir };
+allow unconfined_t cosmiand_script_t:file { relabelto relabelfrom ioctl execute execute_no_trans getattr setattr append create open read write unlink };
+allow setroubleshootd_t cosmiand_script_t:{ dir file } getattr;
